@@ -1,0 +1,4 @@
+experiment-path: /Users/michael.shtelma@databricks.com/experiments/leclub_test_1
+data-path: dbfs:/databricks-datasets/samples/lending_club/parquet
+test-output-path: dbfs:/tmp/msh/leout_test
+model-name: LendingClubScoringModelIntTest
