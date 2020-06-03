@@ -1,3 +1,3 @@
 model-name: lendingclub_scoring
-experiment-path: /Users/michael.shtelma@databricks.com/experiments/cicd1
+experiment-path: /Shared/cicd1
 cloud: AWS

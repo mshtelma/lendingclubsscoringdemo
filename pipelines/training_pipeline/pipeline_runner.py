@@ -12,5 +12,5 @@ spark = SparkSession.builder.appName('ForecastingTest').getOrCreate()
 conf = read_config('train_config.yaml', sys.argv[1])
 setupMlflowConf(conf)
 p = LendingClubTrainingPipeline(spark, conf['data-path'], conf['model-name'])
-p.run()
+print(p.run())
 

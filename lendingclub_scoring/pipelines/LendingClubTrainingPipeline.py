@@ -22,6 +22,7 @@ class LendingClubTrainingPipeline():
     def run(self):
         X_train, X_test, Y_train, Y_test = self.data_provider.run()
         self.train(X_train, X_test, Y_train, Y_test)
+        return 'YES'
 
     def train(self, X_train, X_test, Y_train, Y_test):
         lr = LogisticRegression()

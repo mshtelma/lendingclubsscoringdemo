@@ -1,5 +1,5 @@
 {
-  "name": "Nightly model training",
+  "name": "Training Pipeline",
   "new_cluster": {
     "spark_version": "6.6.x-cpu-ml-scala2.11",
     "node_type_id": "i3.xlarge",

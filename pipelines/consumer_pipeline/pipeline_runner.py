@@ -1,12 +1,5 @@
 import sys
 
-import pandas as pd
-import numpy as np
-
-import mlflow
-import mlflow.sklearn
-from mlflow.tracking import MlflowClient
-
 from pyspark.sql import SparkSession
 
 from lendingclub_scoring.pipelines.LendingClubConsumerPipeline import LendingClubConsumerPipeline
@@ -18,4 +11,6 @@ setupMlflowConf(conf)
 
 p = LendingClubConsumerPipeline(spark, conf['data-path'],conf['output-path'],conf['model-name'])
 p.run()
+
+spark.read.load(conf['output-path']).show(1000, False)
 

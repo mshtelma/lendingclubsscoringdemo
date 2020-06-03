@@ -44,6 +44,7 @@ class LendingClubModelEvaluationPipeline():
         for run_id in cand_run_ids:
             mlflow_client.set_tag(run_id, 'candidate', 'false')
 
+
     def get_best_model(self, run_ids, X, Y):
         best_roc = -1
         best_run_id = None
