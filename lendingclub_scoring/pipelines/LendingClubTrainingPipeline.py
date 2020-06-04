@@ -3,6 +3,7 @@ import mlflow.sklearn
 from pyspark.sql import Window
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, roc_auc_score, mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
@@ -22,14 +23,14 @@ class LendingClubTrainingPipeline():
     def run(self):
         X_train, X_test, Y_train, Y_test = self.data_provider.run()
         self.train(X_train, X_test, Y_train, Y_test)
-        return 'YES'
 
     def train(self, X_train, X_test, Y_train, Y_test):
-        lr = LogisticRegression()
-        lr.fit(X_train, Y_train)
-        with mlflow.start_run(run_name="Manual deployment") as run:
-            self.eval_and_log_metrics(lr, X_test, Y_test)
-            mlflow.sklearn.log_model(lr,"model")
+        cl = LogisticRegression(random_state=42)
+        #cl = RandomForestClassifier(random_state=42)
+        cl.fit(X_train, Y_train)
+        with mlflow.start_run(run_name="Training") as run:
+            self.eval_and_log_metrics(cl, X_test, Y_test)
+            mlflow.sklearn.log_model(cl,"model")
 
     def eval_and_log_metrics(self, estimator, X, Y):
         predictions = estimator.predict(X)
