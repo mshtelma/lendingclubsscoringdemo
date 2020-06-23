@@ -9,7 +9,7 @@ from lendingclub_scoring.data.DataProvider import LendingClubDataProvider
 
 
 class LendingClubModelEvaluationPipeline():
-    def __init__(self, spark, experimentID, model_name, input_path, limit=None):
+    def  __init__(self, spark, experimentID, model_name, input_path, limit=None):
         self.spark = spark
         self.input_path = input_path
         self.model_name = model_name

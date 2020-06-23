@@ -11,7 +11,6 @@ from sklearn.model_selection import train_test_split
 from lendingclub_scoring.data.DataProvider import LendingClubDataProvider
 
 
-
 class LendingClubTrainingPipeline():
     def __init__(self, spark, input_path, model_name, limit=None):
         self.spark = spark
@@ -25,12 +24,12 @@ class LendingClubTrainingPipeline():
         self.train(X_train, X_test, Y_train, Y_test)
 
     def train(self, X_train, X_test, Y_train, Y_test):
-        cl = LogisticRegression(random_state=42)
-        #cl = RandomForestClassifier(random_state=42)
+        cl = LogisticRegression(random_state=42, max_iter=100)
+        # cl = RandomForestClassifier(random_state=42)
         cl.fit(X_train, Y_train)
         with mlflow.start_run(run_name="Training") as run:
             self.eval_and_log_metrics(cl, X_test, Y_test)
-            mlflow.sklearn.log_model(cl,"model")
+            mlflow.sklearn.log_model(cl, "model")
 
     def eval_and_log_metrics(self, estimator, X, Y):
         predictions = estimator.predict(X)
@@ -57,5 +56,3 @@ class LendingClubTrainingPipeline():
         mlflow.log_metric("r2", r2)
 
         mlflow.set_tag('candidate', 'true')
-
-

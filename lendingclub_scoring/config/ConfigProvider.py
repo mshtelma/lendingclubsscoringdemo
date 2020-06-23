@@ -15,6 +15,10 @@ def read_config(name, root):
 
 def setupMlflowConf(conf):
     mlflow.set_experiment(conf['experiment-path'])
-    time.sleep(5)
-    experimentID = mlflow.get_experiment_by_name(conf['experiment-path']).experiment_id
-    return experimentID
+    try:
+        experimentID = mlflow.get_experiment_by_name(conf['experiment-path']).experiment_id
+        return experimentID
+    except FileNotFoundError as e:
+        time.sleep(10)
+        experimentID = mlflow.get_experiment_by_name(conf['experiment-path']).experiment_id
+        return experimentID

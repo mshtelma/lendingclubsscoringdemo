@@ -2,3 +2,4 @@ experiment-path: /Users/michael.shtelma@databricks.com/experiments/leclub1
 data-path: dbfs:/databricks-datasets/samples/lending_club/parquet
 output-path: dbfs:/tmp/msh/leout
 model-name: LendingClubScoringModel
+stage: Production
