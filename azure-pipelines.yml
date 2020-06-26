@@ -1,36 +1,106 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+variables:
+- group: Databricks-environment
+
+schedules:
+- cron: "00 00 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+      - master
 
 trigger:
-- master
+  branches:
+    include:
+      - dev
+      - master
+      - staging
+      - releases/*
+  tags:
+    include:
+      - v*.*
+      - prod
 
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python27:
-      python.version: '2.7'
-    Python35:
-      python.version: '3.5'
-    Python36:
-      python.version: '3.6'
-    Python37:
-      python.version: '3.7'
+  paths:
+    exclude:
+      - .github/*
+      - mlruns/*
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+stages:
+- stage: Build
+  condition: |
+    or
+    (
+      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+      startsWith(variables['Build.SourceBranch'], 'refs/pull')
+    )
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-18.04'
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+    steps:
+    - script: env | sort
+      displayName: 'Environment / Context'
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: 3.7
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install deployment/databrickslabs_cicdtemplates-0.2.2-py3-none-any.whl
+      displayName: 'Install Python Dependencies'
+
+    - script: |
+        pip install pytest
+        python -m pytest
+      displayName: 'Run Unit tests'
+
+    - script: |
+        python setup.py bdist_wheel
+      displayName: 'Build artifact'
+
+    - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+      inputs:
+        url: '$(DATABRICKS_HOST)'
+        token: '$(DATABRICKS_TOKEN)'
+      displayName: 'Configure Databricks CLI for AZDO'
+
+    - script: |
+        # Prevent the "RestException: RESOURCE_DOES_NOT_EXIST: Parent directory /Users/$(Username)/experiments does not exist" Error first time.
+        databricks workspace mkdirs /Users/$(DATABRICKS_USERNAME)/experiments --profile AZDO
+        python -c "from databrickslabs_cicdtemplates import dev_cicd_pipeline; dev_cicd_pipeline.main('dev-tests');"
+      env:
+        DATABRICKS_HOST: $(DATABRICKS_HOST)
+        DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
+        MLFLOW_TRACKING_URI: $(MLFLOW_TRACKING_URI)
+      displayName: 'Deploy artifact'
+
+
+- stage: Release
+  dependsOn: []
+  condition: |
+    or(
+      startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    )
+  jobs:
+  - job: Release
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - script: env | sort
+      displayName: 'Environment / Context'
+
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: 3.7
+
+    - script: |
+        echo "Release"
+      displayName: 'Release stage'
