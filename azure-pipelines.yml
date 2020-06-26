@@ -48,10 +48,15 @@ stages:
       inputs:
         versionSpec: 3.7
 
+    - checkout: self
+      persistCredentials: true
+      clean: true
+      displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+
     - script: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install deployment/databrickslabs_cicdtemplates-0.2.2-py3-none-any.whl
+        pip install deployment/databrickslabs_cicdtemplates-0.2.3-py3-none-any.whl
       displayName: 'Install Python Dependencies'
 
     - script: |
@@ -93,14 +98,46 @@ stages:
       vmImage: 'ubuntu-18.04'
 
     steps:
-    - script: env | sort
-      displayName: 'Environment / Context'
+      - script: env | sort
+        displayName: 'Environment / Context'
 
-    - task: UsePythonVersion@0
-      displayName: 'Use Python 3.7'
-      inputs:
-        versionSpec: 3.7
+      - task: UsePythonVersion@0
+        displayName: 'Use Python 3.7'
+        inputs:
+          versionSpec: 3.7
 
-    - script: |
-        echo "Release"
-      displayName: 'Release stage'
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        displayName: 'Checkout & Build.Reason: $(Build.Reason) & Build.SourceBranchName: $(Build.SourceBranchName)'
+
+      - script: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install deployment/databrickslabs_cicdtemplates-0.2.3-py3-none-any.whl
+        displayName: 'Install Python Dependencies'
+
+      - script: |
+          pip install pytest
+          python -m pytest
+        displayName: 'Run Unit tests'
+
+      - script: |
+          python setup.py bdist_wheel
+        displayName: 'Build artifact'
+
+      - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
+        inputs:
+          url: '$(DATABRICKS_HOST)'
+          token: '$(DATABRICKS_TOKEN)'
+        displayName: 'Configure Databricks CLI for AZDO'
+
+      - script: |
+          # Prevent the "RestException: RESOURCE_DOES_NOT_EXIST: Parent directory /Users/$(Username)/experiments does not exist" Error first time.
+          databricks workspace mkdirs /Users/$(DATABRICKS_USERNAME)/experiments --profile AZDO
+          python -c "from databrickslabs_cicdtemplates import release_cicd_pipeline; release_cicd_pipeline.main('integration-tests', 'pipelines', True);"
+        env:
+          DATABRICKS_HOST: $(DATABRICKS_HOST)
+          DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
+          MLFLOW_TRACKING_URI: $(MLFLOW_TRACKING_URI)
+        displayName: 'Deploy artifact'

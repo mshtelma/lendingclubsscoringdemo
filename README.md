@@ -1,0 +1,1 @@
+[![Build Status](https://dev.azure.com/db-mlops/lendingclubsscoringdemo/_apis/build/status/MiguelPeralvo.lendingclubsscoringdemo?branchName=master)](https://dev.azure.com/db-mlops/lendingclubsscoringdemo/_build/latest?definitionId=3&branchName=master)(mlops)
