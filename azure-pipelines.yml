@@ -138,8 +138,8 @@ stages:
 
       - task: riserrad.azdo-databricks.azdo-databricks-configuredatabricks.configuredatabricks@0
         inputs:
-          url: '$(DATABRICKS_HOST)'
-          token: '$(DATABRICKS_TOKEN)'
+          url: '$(DATABRICKS_STAGING_HOST)'
+          token: '$(DATABRICKS_STAGING_TOKEN)'
         displayName: 'Configure Databricks CLI for AZDO'
 
       - script: |
@@ -156,7 +156,7 @@ stages:
 
           python -c "from databrickslabs_cicdtemplates import release_cicd_pipeline; release_cicd_pipeline.main('integration-tests', 'pipelines', True);"
         env:
-          DATABRICKS_HOST: $(DATABRICKS_HOST)
-          DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
+          DATABRICKS_HOST: $(DATABRICKS_STAGING_HOST)
+          DATABRICKS_TOKEN: $(DATABRICKS_STAGING_TOKEN)
           MLFLOW_TRACKING_URI: $(MLFLOW_TRACKING_URI)
         displayName: 'Deploy artifact'
