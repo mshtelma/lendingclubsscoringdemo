@@ -31,7 +31,8 @@ assert spark_df.where("tags.candidate='true'").count() == 0
 assert len(MlflowClient().get_latest_versions(conf['model-name'], stages=['Production'])) > 0
 
 # consume
-p = LendingClubConsumerPipeline(spark, conf['data-path'], conf['test-output-path'], conf['model-name'], limit=limit)
+p = LendingClubConsumerPipeline(spark, conf['data-path'], conf['test-output-path'], conf['model-name'],
+                                stage=['Production'], limit=limit)
 p.run()
 
 res_df = spark.read.load(conf['test-output-path'])
