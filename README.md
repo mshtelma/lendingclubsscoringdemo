@@ -6,4 +6,4 @@ Azure DevOps Status - Pipeline 2:
 
 
 GitHub Actions Status
-![On Push](https://github.com/actions/lendingclubsscoringdemo/workflows/.github/workflows/onpush.yml/badge.svg)
+![On Push](https://github.com/mshtelma/lendingclubsscoringdemo/workflows/.github/workflows/onpush.yml/badge.svg)
