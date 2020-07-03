@@ -2,12 +2,6 @@ variables:
 - group: Databricks-environment
 
 trigger:
-  branches:
-    include:
-      - dev
-      - master
-      - staging
-      - releases/*
   tags:
     include:
       - v*.*
@@ -19,16 +13,9 @@ trigger:
       - mlruns/*
 
 stages:
-- stage: Build
-  condition: |
-    or
-    (
-      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/master'),
-      startsWith(variables['Build.SourceBranch'], 'refs/pull')
-    )
+- stage: onPush
   jobs:
-  - job: Build
+  - job: onPushJob
     pool:
       vmImage: 'ubuntu-18.04'
 
@@ -73,21 +60,22 @@ stages:
 
         python -c "from databrickslabs_cicdtemplates import dev_cicd_pipeline; dev_cicd_pipeline.main('dev-tests');"
       env:
-        DATABRICKS_HOST: $(DATABRICKS_HOST)
-        DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
+        DATABRICKS_HOST: $(DATABRICKS_STAGING_HOST)
+        DATABRICKS_TOKEN: $(DATABRICKS_STAGING_TOKEN)
         MLFLOW_TRACKING_URI: $(MLFLOW_TRACKING_URI)
+        CURRENT_CLOUD: $(CURRENT_CLOUD)
       displayName: 'Deploy artifact'
 
 
-- stage: Release
-  dependsOn: []
+- stage: onRelease
+  dependsOn: [onPush]
   condition: |
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/heads/releases'),
       startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     )
   jobs:
-  - job: Release
+  - job: onReleaseJob
     pool:
       vmImage: 'ubuntu-18.04'
 
@@ -129,14 +117,6 @@ stages:
       - script: |
           # Prevent the "RestException: RESOURCE_DOES_NOT_EXIST: Parent directory /Users/$(Username)/experiments does not exist" Error first time.
           databricks workspace mkdirs /Users/$(DATABRICKS_USERNAME)/experiments --profile AZDO
-
-          # Workaround while we implement injection of the deployment from CI/CD tool
-          echo $HOME
-          chmod 777 $(Build.Repository.LocalPath)/deployment.yaml
-          echo "model-name: lendingclub_scoring" > $(Build.Repository.LocalPath)/deployment.yaml
-          echo "experiment-path: /Shared/cicd1" >> $(Build.Repository.LocalPath)/deployment.yaml
-          echo "cloud: Azure" >> $(Build.Repository.LocalPath)/deployment.yaml
-          cat $(Build.Repository.LocalPath)/deployment.yaml
 
           python -c "from databrickslabs_cicdtemplates import release_cicd_pipeline; release_cicd_pipeline.main('integration-tests', 'pipelines', True);"
         env:
