@@ -4,7 +4,8 @@ variables:
 trigger:
   batch: true
   branches:
-    include: '*'
+    include:
+    - '*'
 
   tags:
     include:
