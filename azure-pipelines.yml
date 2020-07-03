@@ -1,13 +1,3 @@
-variables:
-- group: Databricks-environment
-
-schedules:
-- cron: "00 00 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-      - master
-
 trigger:
   branches:
     include:
@@ -77,15 +67,6 @@ stages:
     - script: |
         # Prevent the "RestException: RESOURCE_DOES_NOT_EXIST: Parent directory /Users/$(Username)/experiments does not exist" Error first time.
         databricks workspace mkdirs /Users/$(DATABRICKS_USERNAME)/experiments --profile AZDO
-
-        # Workaround while we implement injection of the deployment from CI/CD tool. Potentially no longer needed.
-#        echo $HOME
-#        chmod 777 $(Build.Repository.LocalPath)/deployment.yaml
-#        echo "model-name: lendingclub_scoring" > $(Build.Repository.LocalPath)/deployment.yaml
-#        echo "experiment-path: /Shared/cicd1" >> $(Build.Repository.LocalPath)/deployment.yaml
-#        echo "cloud: Azure" >> $(Build.Repository.LocalPath)/deployment.yaml
-#        cat $(Build.Repository.LocalPath)/deployment.yaml
-
 
         python -c "from databrickslabs_cicdtemplates import dev_cicd_pipeline; dev_cicd_pipeline.main('dev-tests');"
       env:
