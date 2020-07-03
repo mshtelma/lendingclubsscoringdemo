@@ -2,6 +2,10 @@ variables:
 - group: Databricks-environment
 
 trigger:
+  batch: true
+  branches:
+    include: '*'
+
   tags:
     include:
       - v*.*
