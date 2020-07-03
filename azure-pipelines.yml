@@ -1,3 +1,6 @@
+variables:
+- group: Databricks-environment
+
 trigger:
   branches:
     include:
@@ -140,4 +143,5 @@ stages:
           DATABRICKS_HOST: $(DATABRICKS_STAGING_HOST)
           DATABRICKS_TOKEN: $(DATABRICKS_STAGING_TOKEN)
           MLFLOW_TRACKING_URI: $(MLFLOW_TRACKING_URI)
+          CURRENT_CLOUD: $(CURRENT_CLOUD)
         displayName: 'Deploy artifact'
