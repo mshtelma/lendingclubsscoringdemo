@@ -1,6 +1,6 @@
 setuptools
 wheel
-pyspark==3.0.0
+pyspark==3.2.2
 pyarrow==0.17.1
 mlflow==1.9.1
 pytest==5.3.1
